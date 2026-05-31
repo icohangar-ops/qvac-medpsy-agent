@@ -1,0 +1,6 @@
+{
+  "loggerConsoleOutput": true,
+  "loggerLevel": "info",
+  "cacheDirectory": "/Users/cubiczan/.qvac/models",
+  "httpDownloadConcurrency": 3
+}

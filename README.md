@@ -157,3 +157,9 @@ MIT — Built for the QVAC Unleash Edge AI Hackathon.
 🖼️ [**View thumbnail**](./thumbnail.png)
 
 The demo video walks through the architecture, agents, and how to get started.
+
+---
+
+## 📋 Hackathon Submission
+
+For the full BUIDL submission (architecture deep-dive, performance benchmarks, security analysis, and roadmap), see [**BUIDL.md**](./BUIDL.md).

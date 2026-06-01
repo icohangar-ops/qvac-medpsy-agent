@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain, performance } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import {
@@ -9,6 +9,13 @@ import {
   unloadModel,
   completion
 } from '@qvac/sdk'
+import {
+  initAuditLog,
+  logModelLoad,
+  logModelUnload,
+  logInference,
+  appendRecord
+} from './audit-log'
 
 app.commandLine.appendSwitch('no-sandbox')
 
@@ -38,7 +45,10 @@ function createWindow(): void {
 }
 
 function setupHandlers(): void {
+  initAuditLog()
+
   ipcMain.handle('load-model', async () => {
+    const loadStart = performance.now()
     console.log('Loading QVAC model on Intel Mac mini (4 cores, 8GB RAM)...')
 
     // Primary: MedGemma 4B Q4_1 (~2.56GB) — medical model for clinical reasoning.
@@ -58,6 +68,7 @@ function setupHandlers(): void {
         }
       })
       console.log('✅ MedGemma 4B loaded successfully')
+      logModelLoad('MedGemma 4B Q4_1', performance.now() - loadStart, 'success')
     } catch (medErr) {
       console.log('MedGemma not available, falling back to Llama 3.2 1B')
       console.error(medErr)
@@ -75,6 +86,7 @@ function setupHandlers(): void {
         }
       })
       console.log('✅ Llama 3.2 1B loaded')
+      logModelLoad('Llama 3.2 1B Q4_0', performance.now() - loadStart, 'fallback')
     }
 
     // Try loading embeddings model for local RAG capability
@@ -86,6 +98,7 @@ function setupHandlers(): void {
         modelConfig: { device: 'cpu' }
       })
       console.log('✅ Embedding model loaded for RAG')
+      appendRecord({ timestamp: new Date().toISOString(), type: 'load', model: 'EmbeddingGemma 300M Q4_0', detail: 'RAG model loaded' })
     } catch {
       console.log('Embeddings model not available, continuing without RAG')
     }
@@ -95,6 +108,10 @@ function setupHandlers(): void {
 
   ipcMain.handle('infer', async (_event, history) => {
     if (!modelId) throw new Error('Model not loaded.')
+
+    const promptTokens = history.reduce((sum: number, m: { role: string; content: string }) => sum + m.content.length / 4, 0)
+    const inferStart = performance.now()
+    let inferenceModel = modelId?.includes('medgemma') ? 'MedGemma 4B Q4_1' : 'Llama 3.2 1B Q4_0'
 
     const result = completion({
       modelId,
@@ -106,10 +123,39 @@ function setupHandlers(): void {
       }
     })
 
+    let ttftMs = 0
+    let completionTokens = 0
+    let totalDurationMs = 0
+
     for await (const token of result.tokenStream) {
-      win?.webContents.send('completion-stream', token)
+      if (token === '') {
+        totalDurationMs = performance.now() - inferStart
+        const tokensPerSec = totalDurationMs > 0 ? (completionTokens / totalDurationMs) * 1000 : 0
+
+        // Log inference performance
+        appendRecord({
+          timestamp: new Date().toISOString(),
+          type: 'inference',
+          model: inferenceModel,
+          detail: `prompt_tokens=${Math.round(promptTokens)}`,
+          promptTokens: Math.round(promptTokens),
+          completionTokens,
+          ttftMs: Math.round(ttftMs),
+          tokensPerSecond: parseFloat(tokensPerSec.toFixed(2)),
+          totalDurationMs: Math.round(totalDurationMs),
+        })
+
+        console.log(`[Audit] Inference: model=${inferenceModel} prompt=${Math.round(promptTokens)}tok completed=${completionTokens}tok ttft=${Math.round(ttftMs)}ms tok/s=${tokensPerSec.toFixed(1)} total=${Math.round(totalDurationMs)}ms`)
+
+        win?.webContents.send('completion-stream', token)
+      } else {
+        if (completionTokens === 0) {
+          ttftMs = performance.now() - inferStart
+        }
+        completionTokens++
+        win?.webContents.send('completion-stream', token)
+      }
     }
-    win?.webContents.send('completion-stream', '')
   })
 
   ipcMain.on('system-message', (_event, msg) => {
@@ -118,7 +164,9 @@ function setupHandlers(): void {
 
   ipcMain.handle('unload-model', async () => {
     if (!modelId) throw new Error('Model not loaded.')
+    const modelName = modelId?.includes('medgemma') ? 'MedGemma 4B Q4_1' : 'Llama 3.2 1B Q4_0'
     await unloadModel({ modelId, clearStorage: false })
+    logModelUnload(modelName)
     modelId = null
     return 'model unloaded'
   })

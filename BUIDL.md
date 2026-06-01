@@ -413,3 +413,161 @@ MIT — built for the QVAC Unleash Edge AI Hackathon.
 ---
 
 *Built with 🧬 by CubicZan — QVAC SDK · MedGemma 4B · Electron · React · Tailwind CSS 4*
+
+---
+
+## 📝 Hackathon Submission Questions
+
+### 1. Prior Work
+
+This submission was built **from scratch during the QVAC Unleash Edge AI Hackathon submission period**. All code in this repository is original work.
+
+**Dependencies used (not prior work, but external libraries):**
+
+| Library | Purpose | License |
+|---------|---------|--------|
+| **@qvac/sdk** 0.11.0 | QVAC SDK — model loading, inference, type-safe APIs (Proprietary/EULA) | SDK provided for hackathon |
+| **MedGemma 4B** | Medical LLM from Gemma 4B fine-tune (Google) | Gemma license |
+| **EmbeddingGemma 300M** | Dense embedding model for future RAG (Google) | Gemma license |
+| **llama.cpp** (bundled via QVAC SDK) | CPU inference backend | MIT |
+| **Electron 33** | Desktop application framework | MIT |
+| **React 18** | UI library | MIT |
+| **Tailwind CSS 4** | Utility-first CSS framework | MIT |
+| **electron-vite** | Build tooling | MIT |
+| **electron-builder** | App packaging | MIT |
+
+**What we built (all original):**
+- Multi-agent architecture with 4 specialist agents + orchestrator routing
+- Agent-specific system prompts with medical disclaimers
+- Streaming token-by-token inference pipeline via Electron IPC
+- Tailwind CSS 4 dark-mode UI with agent switcher, progress bars, status indicators
+- TypeScript declaration files for the QVAC preload bridge
+- Audit logging system for model loads/unloads and inference performance metrics
+- Demo video, thumbnail, and comprehensive BUIDL documentation
+
+**No existing projects, templates, or boilerplate were used beyond the standard Electron + React + QVAC SDK starter setup.**
+
+---
+
+### 2. Reproducibility Instructions
+
+#### Hardware Used for Demo
+
+| Component | Specification |
+|-----------|---------------|
+| **Device** | Apple Mac mini (2023) |
+| **CPU** | Apple M2 (4 performance + 4 efficiency cores) |
+| **GPU** | Apple M2 integrated 10-core GPU (not used — CPU inference only) |
+| **RAM** | 8 GB unified memory |
+| **Storage** | 256 GB SSD (~2.56 GB used for model) |
+| **OS** | macOS Sonoma 14.x |
+
+#### Reproduce Locally
+
+```bash
+# 1. Prerequisites: Node.js 22+, npm 10+, macOS (Intel or Apple Silicon)
+#    8 GB RAM minimum (16 GB recommended)
+
+# 2. Clone
+git clone https://github.com/Cubiczan/qvac-medpsy-agent.git
+cd qvac-medpsy-agent
+
+# 3. Install
+git clone https://github.com/cubiczan/qvac-medpsy-agent.git
+cd qvac-medpsy-agent
+npm install
+
+# 4. Run (development mode)
+npm run dev
+
+# 5. The app will:
+#    - Open an Electron window
+#    - Download MedGemma 4B Q4_1 (~2.56 GB) on first launch
+#    - Show download progress in the UI
+#    - Load the model and display "MedGemma 4B loaded — Ready"
+#    - Accept medical queries via the chat interface
+#    - Stream responses token-by-token
+#
+# 6. (Optional) Production build
+npm run build
+npm run preview
+```
+
+#### Minimal Viable Hardware
+
+| Spec | Minimum | Recommended |
+|------|---------|-------------|
+| **RAM** | 8 GB | 16 GB |
+| **CPU** | Intel i5 / M1 | M2+ / i7+ |
+| **Disk** | 5 GB free | 10 GB free |
+| **OS** | macOS 13+ | macOS 14+ |
+| **Node.js** | 20 LTS | 22 LTS |
+
+---
+
+### 3. Remote APIs Used
+
+**Zero remote APIs.** This application makes no outbound network calls for inference. All model inference runs locally via the QVAC SDK and llama.cpp.
+
+| Component | Remote API? | Purpose |
+|-----------|-------------|---------|
+| **Inference** | ❌ No | 100% local via QVAC SDK + llama.cpp |
+| **Model download** | ✅ Yes (first launch) | Downloads MedGemma 4B from Hugging Face / QVAC registry on first launch only |
+| **Embeddings** | ❌ No | Local EmbeddingGemma 300M (if loaded) |
+| **Telemetry** | ❌ No | No analytics, no crash reporting, no usage tracking |
+| **Updates** | ❌ No | No auto-update system configured |
+
+The **only external network request** is the initial model download from the QVAC model registry (Hugging Face mirror). After the model is cached locally, all subsequent operation is fully offline.
+
+---
+
+### 4. Audit Log
+
+**Yes — the repo now includes a structured audit log system.**
+
+**Audit log file:** `~/Library/Application Support/qvac-medpsy-agent/audit-log.json`
+
+**Captured per event:**
+
+| Event | Fields Captured |
+|-------|----------------|
+| **Model load** | timestamp, type, model name, duration_ms, status (success/fallback/error) |
+| **Model unload** | timestamp, type, model name |
+| **Inference** | timestamp, type, model, prompt_tokens, completion_tokens, ttft_ms (time-to-first-token), tokens_per_second, total_duration_ms |
+
+**Sample audit log entry (inference):**
+```json
+{
+  "timestamp": "2026-06-01T14:00:00.000Z",
+  "type": "inference",
+  "model": "MedGemma 4B Q4_1",
+  "detail": "prompt_tokens=128",
+  "promptTokens": 128,
+  "completionTokens": 45,
+  "ttftMs": 320,
+  "tokensPerSecond": 18.75,
+  "totalDurationMs": 2400
+}
+```
+
+**Sample audit log entry (model load):**
+```json
+{
+  "timestamp": "2026-06-01T14:00:00.000Z",
+  "type": "load",
+  "model": "MedGemma 4B Q4_1",
+  "detail": "status=success, duration=12450ms"
+}
+```
+
+The audit log automatically rotates at 1 MB, keeping up to 3 backup generations. Implementation: `src/main/audit-log.ts`.
+
+**To view your audit log after running the app:**
+```bash
+cat ~/Library/Application\ Support/qvac-medpsy-agent/audit-log.json
+```
+
+On Linux:
+```bash
+cat ~/.config/qvac-medpsy-agent/audit-log.json
+```

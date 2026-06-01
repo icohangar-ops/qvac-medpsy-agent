@@ -147,3 +147,13 @@ MIT — Built for the QVAC Unleash Edge AI Hackathon.
 ---
 
 *Built with QVAC SDK · MedGemma 4B · Electron · React · Tailwind CSS 4*
+
+---
+
+## 📺 Demo
+
+🎬 [**Watch the 3-minute demo**](./demo.mp4)
+
+🖼️ [**View thumbnail**](./thumbnail.png)
+
+The demo video walks through the architecture, agents, and how to get started.

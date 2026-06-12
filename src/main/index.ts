@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, performance } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import {

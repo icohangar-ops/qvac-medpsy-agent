@@ -379,8 +379,8 @@ The architecture already supports this:
 | Platform | URL |
 |----------|-----|
 | **Codeberg** | https://codeberg.org/cubiczan/qvac-medpsy-agent |
-| **GitHub (zan-maker)** | https://github.com/zan-maker/qvac-medpsy-agent |
-| **GitHub (Cubiczan)** | https://github.com/Cubiczan/qvac-medpsy-agent |
+| **GitHub (zan-maker)** | https://github.com/icohangar-ops/qvac-medpsy-agent |
+| **GitHub (Cubiczan)** | https://github.com/icohangar-ops/qvac-medpsy-agent |
 
 ---
 
@@ -469,11 +469,11 @@ This submission was built **from scratch during the QVAC Unleash Edge AI Hackath
 #    8 GB RAM minimum (16 GB recommended)
 
 # 2. Clone
-git clone https://github.com/Cubiczan/qvac-medpsy-agent.git
+git clone https://github.com/icohangar-ops/qvac-medpsy-agent.git
 cd qvac-medpsy-agent
 
 # 3. Install
-git clone https://github.com/cubiczan/qvac-medpsy-agent.git
+git clone https://github.com/icohangar-ops/qvac-medpsy-agent.git
 cd qvac-medpsy-agent
 npm install
 

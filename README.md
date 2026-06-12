@@ -48,7 +48,7 @@ A privacy-first medical intelligence platform running entirely on-device via the
 
 ```bash
 # Clone
-git clone https://github.com/cubiczan/qvac-medpsy-agent.git
+git clone https://github.com/icohangar-ops/qvac-medpsy-agent.git
 cd qvac-medpsy-agent
 
 # Install

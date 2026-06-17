@@ -78,8 +78,9 @@ src/
 │   └── src/
 │       ├── App.tsx       # React UI with agent system
 │       ├── qvac.d.ts     # Type declarations for preload API
-│       ├── index.tsx     # React root mount
-│       └── main.css      # Tailwind CSS 4 entry
+│       ├── main.tsx      # React root mount
+│       └── assets/
+│           └── main.css  # Tailwind CSS 4 entry
 electron.vite.config.ts   # Electron-Vite build config
 ```
 
